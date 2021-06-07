@@ -1,61 +1,16 @@
 {-# LINE 1 "PHoas.lhs" #-}
 #line 1 "PHoas.lhs"
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   {-# OPTIONS -XRankNTypes #-}
 
   module PHoas where
 
   import Control.Monad.Reader hiding (fix)
 
-
-
-
-
   instance Show Value where
     show (VLit x) = show x
     show (VBool x) = show x
     show (Val f)  = "<<function>>"
-
-
-
-
-
-
-
 
   data PLambda a = 
       PVar a 
@@ -70,67 +25,7 @@
  
   newtype Lambda = HideLambda {revealLambda :: forall a . PLambda a} 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
   idLambda = HideLambda (PLam (\x -> PVar x))
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
   data Value = VLit Int | VBool Bool | Val (Value -> Value)
@@ -153,69 +48,8 @@
     evalPLambda (PApp e1 e2)       = case  evalPLambda e1 of 
                                            Val f  -> f (evalPLambda e2)
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-  t1 = HideLambda (PApp (PLam (\x -> PAdd (PLit 3) (PVar x))) (PLit 4)) 
+  t1 = HideLambda (PApp (PLam (\x -> PAdd (PLit 3) (PVar x))) (PLit 4))
   test = show (eval t1) -- returns ``7''
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
   data Exp = L (Exp -> Exp) | A Exp Exp
  
@@ -228,26 +62,11 @@
   reify :: Value -> Exp
   reify (Val f) = L (reify . f . evalExp) 
 
-
-
-
-
-
-
-
   instance Show Lambda where
     show = showLambda
 
-
-
-
-
-
-
   fresh :: MonadReader r m => m r
   fresh = ask
-
-
 
   showLambda    :: Lambda -> String
   showLambda e  = runReader (showPLambda (revealLambda e)) 'a' where
@@ -263,8 +82,6 @@
            return  ("(" ++ s1 ++ ") (" ++ s2 ++ ")")
     {-"\ldots"-}
 
-
-
     showPLambda (PLit n)           = return (show n)
     showPLambda (PBool b)          = return (show b)
     showPLambda (PIf e1 e2 e3)     = 
@@ -276,13 +93,4 @@
     showPLambda (PMult e1 e2)      = do {s1 <- showPLambda e1; s2 <- showPLambda e2; return (s1 ++ " * " ++ s2)}
     showPLambda (PEq e1 e2)        = do {s1 <- showPLambda e1; s2 <- showPLambda e2; return (s1 ++ " == " ++ s2)}
 
-
-
-
-
-
-
   t2 = HideLambda (PLam (\x -> PLam (\y -> PApp (PLam (\x -> PVar x)) (PAdd (PVar x) (PLit 3)))))
-
-
-

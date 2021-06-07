@@ -6,13 +6,13 @@
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \fancyhf{}
-\rhead{TODO}
-\lhead{TODO}
+\rhead{Functional Programming with Structured Graphs}
+\lhead{Open Data}
 \rfoot{Page \thepage}
 
 \title{%
   \vspace{-10ex}
-  TODO
+  Open Data: Functional Programming with Structured Graphs
 }
 \author{%
   Arnau Abella \\
@@ -22,30 +22,26 @@
 
 \begin{document}
 \maketitle
-% \tableofcontents
 
-%%%%%%%%%%%%%% DOCUMENT %%%%%%%%%%%%%%%%%%%%%%
+This project will be based on \textit{Functional Programming with Structured Graphs} by Bruno Oliveira and William R. Cook (2012) \cite{oliveira2012functional} .
+It was published at textit{ICFP '12: Proceedings of the 17th ACM SIGPLAN Internal Conference of Functional Programming} \cite{icfp12}.
 
+The paper presents a new functional programming model for graph called \textit{structued graphs}.
+This model adds explicit definition and manipulation of \textit{cycles} and \textit{sharing}.
+The representation of cycles and sharing is implemented via \textit{recursive binders} and uses
+and encoding inspired by \textit{parametric higher-order abstract syntax} (Parametric HOAS).
+The \textit{well-formedness} of the graph structure is ensured statically in contrast to the traditional
+approaches based on mutable references or node/edge lists.
 
+\input{1-intro}
+\input{2-phoas}
+\input{3-recursive}
+\input{4-graphs}
+\input{5-generic}
+\input{6-application}
+\input{7-related}
 
+\bibliographystyle{plainnat}
+\bibliography{refs}
 
-
-
-
-%%%%%%%%%%%%%% BIBLIOGRAPHY %%%%%%%%%%%%%%%%%%%%%%
-
-% \bibliographystyle{plainnat}
-% \bibliography{report}
-%
-% \cite{einstein}
-% \citet{key}               Jones et al. (1990)
-% \citet*{key}              Jones, Baker, and Smith (1990)
-% \citep{key}               (Jones et al. 1990)
-% \citep*{key}              (Jones, Baker, and Smith 1990)
-% \citep[p.~99]{key}        (Jones et al., 1990, p. 99)
-% \citep[e.g.][]{key}       (e.g. Jones et al., 1990)
-% \citep[e.g.][p.~99]{key}  (e.g. Jones et al., 1990, p. 99)
-% \citeauthor{key}          Jones et al.
-% \citeauthor*{key}         Jones, Baker, and Smith
-% \citeyear{key}            1990
 \end{document}
