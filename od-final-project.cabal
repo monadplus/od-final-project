@@ -1,0 +1,24 @@
+cabal-version:      2.4
+name:               od-final-project
+version:            0.1.0.0
+build-type:         Simple
+author:             Arnau Abella
+maintainer:         arnauabella@gmail.com
+
+common common-options
+    build-depends:    base ^>= 4.14.0.0
+    default-language: Haskell2010
+
+library
+    import:           common-options
+    hs-source-dirs:   src
+    exposed-modules:  Lib
+    other-modules:
+    build-depends:    containers ^>= 0.6
+
+executable od-final-project
+    import:           common-options
+    hs-source-dirs:   app
+    main-is:          Main.hs
+    build-depends:    od-final-project
+    ghc-options:      -O2 -threaded -rtsopts -with-rtsopts=-N

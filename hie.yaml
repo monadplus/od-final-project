@@ -1,0 +1,6 @@
+cradle:
+    cabal:
+        - path: "./src"
+          component: "lib:od-final-project"
+        - path: "./app"
+          component: "exe:od-final-project"
