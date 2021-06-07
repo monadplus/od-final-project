@@ -1,1 +1,36 @@
 \section{Introduction}\label{sec:intro}
+
+% Functional programming languages excel at manipulating \textit{tree structures}. \textit{Algebraic datatypes} and \textit{pattern matching} are used to describe the tree structure of values and manipulate those, respectively. These mechanisms provide a high-level declarative programming model which avoids the explicit manipulation of pointers. However, there are many kinds of data that are more naturally represented as graph structures rather than trees. Some examples are:
+
+% \begin{itemize}
+%   \item Compiler constructs for control/data flow graphs or grammars.
+%   \item Entity-relational data models.
+%   \item Finite state machines or transition systems.
+% \end{itemize}
+
+% In impure functional languages, such as ML or OCaml, a combination of algebraic datatypes and mutables references can be used to model sharing and cycles but explicit manipulation of mutable references is against functional programming principles. For example, observing sharing via pointer/reference comparison breaks \textit{referential transparency}. Although, it is possible to encapsulate the use of mutable references under a purely functional interface, reasoning remains challenging.
+
+% In a non-exhaustive functional languages, like Haskell, it is possible to construct cyclic structures. For example:
+% \vspace{1mm}
+% \begin{minted}[xleftmargin=10pt]{haskell}
+% ones = 1 : ones
+% \end{minted}
+% \vspace{1mm}
+
+% However, sharing is not observable and, from a purely semantic perspective, \code{ones} is no different from an infinite list of 1's. A drawback of this approach is that when an operation is applied to this list sharing is lost.
+
+% To deal with the need of observable sharing some researchers have proposed approaches that use recursive binders to model cycles and sharings. However, several questions need to be addressed for this model to become effective in practice:
+
+% \begin{itemize}
+%   \item How to support and manipulate these binders and variables and guarantee well-formedness of cyclic structures.
+%   \item Is the model expressive enough? Can it deal with general graph edges, including the back edges and cross edges.
+%   \item Can the model deal with operations that require special treatment of fixpoint computations?
+% \end{itemize}
+
+The contributions of Oliviera and Cook are summarised at:
+
+\begin{itemize}
+  \item \textbf{Structured graphs}. A new programming model extending the classic notion of algebraic datatypes with cycles and sharing. This model supports the same benefits as algebraic datatypes and facilitates reasoning over cyclic structures. The binding infraestructure is conveniently defined and manipulated using a PHOAS-based representation.
+  \item \textbf{Generic combinators and infraestructure}. Additional convenience is provided through the use of generic combinators for fold and transformations. Such generic combinators can also encapsulate the use of special fixpoints for certain operations.
+  \item \textbf{Recursive binders using PHOAS}. They also show how to define recursive binders with PHOAS. The recursive multi-binder enables the definition of cross edges.
+\end{itemize}

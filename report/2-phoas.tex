@@ -1,1 +1,64 @@
 \section{Parametric HOAS}\label{sec:phoas}
+
+Parametric Higher-Order Abstract Syntax (PHOAS) has a unique combination of advantages:
+
+\begin{itemize}
+  \item Guaranteed \textit{well-scopedness}.
+  \item No explicit manipulation of environments.
+  \item Easy to define operations.
+\end{itemize}
+
+To illustrate the advantages of PHOAS in more detail, they used the lambda calculus presented in Figure \ref{lst:calculus}.
+
+\textbf{Well-scopedness}\quad The type argument $\alpha$ in $PLambda \ \alpha$ is supposed to be abstract. To enforce this, a universal quantifier is used in the definition. Using $\alpha$ as an abstract type ensures that only variables \textit{bound} by a constructor $Lam$ can be used in the constructor $Var$. For example, the \textit{identity function} can be defined as \mintinline{haskell}{idLambda = HideLambda (PLam (\x -> PVar x))}.
+
+\textbf{No explicit manipulation of environments}\quad Functions defined over PHOAS-based representations avoid the need for explicit manipulation of environments carrying the binding information. Instead, environments are implicitly handled by the meta-language. % The evaluator for our lambda calculus presented in Figure \ref{lst:evaluator} illustrates this.
+
+\begin{listing}[H]
+  \begin{minted}[xleftmargin=10pt, fontsize=\small]{haskell}
+data PLambda a
+= PVar a
+| PLit Int
+| PBool Bool
+| PIf (PLambda a) (PLambda a) (PLambda a)
+| PAdd (PLambda a) (PLambda a)
+| PMult (PLambda a) (PLambda a)
+| PEq (PLambda a) (PLambda a)
+| PLam (a -> PLambda a)
+| PApp (PLambda a) (PLambda a)
+
+newtype Lambda = forall a. PLambda a
+  \end{minted}
+  \caption{PHOAS-encoded lambda calculus}
+  \label{lst:calculus}
+\end{listing}
+
+% \begin{listing}[H]
+%   \begin{minted}[xleftmargin=10pt, fontsize=\small]{haskell}
+% data Value
+%   = VLit Int
+%   | VBool Bool
+%   | Val (Value -> Value)
+
+% eval :: Lambda -> Value
+% eval e = evalPLambda (revealLambda e)
+%   where
+%     evalPLambda :: PLambda Value -> Value
+%     evalPLambda (PVar v) = v
+%     evalPLambda (PLit n) = VLit n
+%     evalPLambda (PBool b) = VBool b
+%     evalPLambda (PIf e1 e2 e3) = case evalPLambda e1 of
+%       VBool b -> if b then evalPLambda e2 else evalPLambda e3
+%     evalPLambda (PAdd e1 e2) = case (evalPLambda e1, evalPLambda e2) of
+%       (VLit x, VLit y) -> VLit (x + y)
+%     evalPLambda (PMult e1 e2) = case (evalPLambda e1, evalPLambda e2) of
+%       (VLit x, VLit y) -> VLit (x * y)
+%     evalPLambda (PEq e1 e2) = case (evalPLambda e1, evalPLambda e2) of
+%       (VLit x, VLit y) -> VBool (x == y)
+%     evalPLambda (PLam f) = Val (evalPLambda . f)
+%     evalPLambda (PApp e1 e2) = case evalPLambda e1 of
+%       Val f -> f (evalPLambda e2)
+%   \end{minted}
+%   \caption{An evaluator for the PHOAS-encoded lambda calculus}
+%   \label{lst:evaluator}
+% \end{listing}

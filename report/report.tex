@@ -23,15 +23,9 @@
 \begin{document}
 \maketitle
 
-This project will be based on \textit{Functional Programming with Structured Graphs} by Bruno Oliveira and William R. Cook (2012) \cite{oliveira2012functional} .
-It was published at textit{ICFP '12: Proceedings of the 17th ACM SIGPLAN Internal Conference of Functional Programming} \cite{icfp12}.
+This project is based on \textit{Functional Programming with Structured Graphs} by Bruno Oliveira and William Cook \cite{oliveira2012functional}. The original work was published at \textit{ICFP '12: Proceedings of the 17th ACM SIGPLAN Internal Conference of Functional Programming} \cite{icfp12}.
 
-The paper presents a new functional programming model for graph called \textit{structued graphs}.
-This model adds explicit definition and manipulation of \textit{cycles} and \textit{sharing}.
-The representation of cycles and sharing is implemented via \textit{recursive binders} and uses
-and encoding inspired by \textit{parametric higher-order abstract syntax} (Parametric HOAS).
-The \textit{well-formedness} of the graph structure is ensured statically in contrast to the traditional
-approaches based on mutable references or node/edge lists.
+\textit{Functional Programming with Structured Graphs} presents a new functional programming model for generic graphs called \textit{structured graphs}. This model adds explicit definition and manipulation of \textit{cycles} and \textit{sharing}. The representation of cycles and sharing is implemented via \textit{recursive binders} and uses and encoding inspired by \textit{parametric higher-order abstract syntax}. The \textit{well-formedness} of the graph structure is ensured statically.
 
 \input{1-intro}
 \input{2-phoas}

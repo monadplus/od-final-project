@@ -14,7 +14,8 @@ library
     hs-source-dirs:   src
     exposed-modules:  PHOAS
     other-modules:
-    build-depends:    containers ^>= 0.6
+    build-depends:    containers ^>= 0.6,
+                      mtl ^>= 2.2,
 
 executable od-final-project
     import:           common-options
