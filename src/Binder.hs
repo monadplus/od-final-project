@@ -1,6 +1,6 @@
-{-# OPTIONS -XRankNTypes #-}
+{-# LANGUAGE RankNTypes #-}
 
-module RecursiveBinders where
+module Binder where
 
 ------------------------------------------
 

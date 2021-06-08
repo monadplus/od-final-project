@@ -13,11 +13,11 @@ library
     import:           common-options
     hs-source-dirs:   src
     exposed-modules:  PHOAS,
-                      RecursiveBinders,
+                      Binder,
                       Stream,
                       Tree,
                       Generic,
-                      Application
+                      Grammar
     other-modules:
     build-depends:    containers ^>= 0.6,
                       mtl ^>= 2.2,
