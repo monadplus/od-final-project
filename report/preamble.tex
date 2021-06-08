@@ -3,6 +3,8 @@
 
 \usepackage[utf8]{inputenc} % encoding
 \usepackage[english]{babel} % use special characters and also translates some elements within the document.
+\usepackage{fontspec}
+\setmonofont{DejaVu Sans Mono}
 
 \usepackage{parskip}        % \par starts on left (not idented)
 
@@ -200,3 +202,6 @@
 %%%% Better enumerate
 
 \usepackage{enumitem} % \begin{enumerate}[label=(\alph*)]
+
+\usepackage{stmaryrd}
+\newcommand{\bbrackets}[1]{\llbracket #1 \rrbracket}

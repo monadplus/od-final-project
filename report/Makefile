@@ -1,15 +1,16 @@
 .PHONY : all report.pdf clean cleanpdf cleandist
 
 TARGET=report
+TEX2PDF=xelatex
 
 all: report.pdf
 
 report.pdf: clean $(wildcard *.tex) $(wildcard *.bib)
-	- pdflatex -halt-on-error -shell-escape $(TARGET)
+	- $(TEX2PDF) -halt-on-error -shell-escape $(TARGET)
 	- bibtex  $(TARGET)
-	- pdflatex -halt-on-error -shell-escape $(TARGET)
+	- $(TEX2PDF) -halt-on-error -shell-escape $(TARGET)
 	- bibtex  $(TARGET)
-	pdflatex -halt-on-error -shell-escape $(TARGET)
+	$(TEX2PDF) -halt-on-error -shell-escape $(TARGET)
 
 clean:
 	rm -f *.eps

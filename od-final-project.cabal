@@ -12,7 +12,12 @@ common common-options
 library
     import:           common-options
     hs-source-dirs:   src
-    exposed-modules:  PHOAS
+    exposed-modules:  PHOAS,
+                      RecursiveBinders,
+                      Stream,
+                      Tree,
+                      Generic,
+                      Application
     other-modules:
     build-depends:    containers ^>= 0.6,
                       mtl ^>= 2.2,
