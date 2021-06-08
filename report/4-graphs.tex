@@ -1,1 +1,36 @@
 \section{Structured Graphs}\label{sec:graphs}
+
+Structured graphs use the recursive binders introduced in Section ref{sec:recursive} to describe cyclic structures. We consider two types of cyclic structures: \emph{cyclic streams} and \emph{cyclic binary trees}.
+
+\subsection{Cyclic Streams and Back Edges}
+\label{subsec:streams}
+
+A datatype for cyclic streams can be defined as follows:
+
+\vspace{1mm}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs]{haskell}
+data PStream a v
+  = Var v
+  | Mu (v -> PStream a v)
+  | Cons a (PStream a v)
+newtype Stream a = HideStream {revealStream :: <$\forall v.$> PStream a v}
+\end{minted}
+\vspace{1mm}
+
+\subsection{Cyclic Binary Trees and Cross Edges}
+\label{subsec:trees}
+
+The datatype for cyclic binary trees is as follows:
+
+\vspace{1mm}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs,samepage=true]{haskell}
+data PTree a v
+  = Var v
+  | Mu ([v] -> [PTree a v])
+  | Empty
+  | Fork a (PTree a v) (PTree a v)
+newtype Tree a = HideTree {revealTree :: forall v . PTree a v}
+\end{minted}
+\vspace{1mm}
+
+The main difference to the datatype of streams (besides the tree-specific consturctors \code{Empty} and \code{Fork}) is the need for the recursive multi-binder to model cross edges.

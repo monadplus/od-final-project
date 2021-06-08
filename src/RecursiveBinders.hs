@@ -15,8 +15,8 @@ fix :: (a -> a) -> a
 fix f = let r = f r in r
 
 ------------------------------------------
+-- Extension of PHOAS-encoded lambda calculus with mu-binder.
 
--- | Extension of PHOAS-encoded lambda calculus with mu-binder.
 data PLambda2 a
   = PFix2 (a -> PLambda2 a) -- mu-binder
   | PVar2 a
@@ -75,8 +75,8 @@ eval2 e = evalPLambda (revealLambda2 e)
         Val f -> f (evalPLambda e2)
 
 ------------------------------------------
+-- Multi-binders.
 
--- | Multi-binders.
 data PLambda3 a
   = PMulti ([a] -> [PLambda3 a]) -- See evenodd example
   | PVar3 a
@@ -102,24 +102,19 @@ eval3 e = evalPLambda (revealLambda3 e)
     evalPLambda (PIf3 e1 e2 e3) =
       case evalPLambda e1 of
         VBool b -> if b then evalPLambda e2 else evalPLambda e3
-        _ -> error "Need a boolean!"
     evalPLambda (PVar3 v) = v
     evalPLambda (PLit3 n) = VLit n
     evalPLambda (PAdd3 e1 e2) =
       case (evalPLambda e1, evalPLambda e2) of
         (VLit x, VLit y) -> VLit (x + y)
-        _ -> error "Need 2 integer arguments!"
     evalPLambda (PMult3 e1 e2) = case (evalPLambda e1, evalPLambda e2) of
       (VLit x, VLit y) -> VLit (x * y)
-      _ -> error "Need 2 integer arguments!"
     evalPLambda (PEq3 e1 e2) = case (evalPLambda e1, evalPLambda e2) of
       (VLit x, VLit y) -> VBool (x == y)
-      _ -> error "Need 2 integer arguments!"
     evalPLambda (PLam3 f) = Val (evalPLambda . f)
     evalPLambda (PApp3 e1 e2) =
       case evalPLambda e1 of
         Val f -> f (evalPLambda e2)
-        _ -> error "Bad application!"
 
 -- >>> eval3 evenodd -- odd 10
 -- False
