@@ -107,6 +107,8 @@ instance ShowF PropertyGraphF where
       ++ if null edges then "" else "-"
       ++ List.intercalate "\n-" (fmap (showEdge sh) edges)
 
+-- >>> putStrLn $ showGraph pg1
+-- (Author{"name":"Arnau"})
 pg1 =
   Hide
     ( In
@@ -119,6 +121,7 @@ pg1 =
     )
 
 -- >>> putStrLn $ showGraph pg2
+-- (Author{"name":"Nietzsche"})-[AuthorOf]->(Book{"title":"Also sprach Zarathustra"})
 pg2 =
   Hide
     ( In
@@ -146,6 +149,12 @@ pg2 =
 -- Mutually recursive edges
 -- Multi-edge
 
+-- >>> putStrLn $ showGraph pg3
+-- Mu (
+--   a => (Person{"name":"John"})-[fatherOf]->b
+--                               -[livingWith]->b
+--   b => (Person{"name":"Nancy"})-[daughterOf]->a
+-- )
 pg3 =
   Hide
     ( Mu
@@ -181,3 +190,5 @@ pg3 =
           ]
       )
     )
+
+-- TODO implement reachability and page rank
