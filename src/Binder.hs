@@ -86,6 +86,9 @@ data PLambda3 a
 
 newtype Lambda3 = HideLambda3 {revealLambda3 :: forall a. PLambda3 a}
 
+-- We give special meaning to the first binder in the multi-binder.
+-- The first binder is used as the body (like in a letrec).
+
 eval3 :: Lambda3 -> Value
 eval3 e = evalPLambda (revealLambda3 e)
   where
@@ -117,15 +120,15 @@ evenodd =
   HideLambda3
     ( PMulti
         ( \(~(_ : odd : even : _)) ->
-            [ PApp3 (PVar3 odd) (PLit3 10), -- body of let rec
-              PLam3 -- definition of odd
+            [ PApp3 (PVar3 odd) (PLit3 10),
+              PLam3
                 ( \n ->
                     PIf3
                       (PEq3 (PVar3 n) (PLit3 0))
                       (PBool3 False)
                       (PApp3 (PVar3 even) (PAdd3 (PVar3 n) (PLit3 (-1))))
                 ),
-              PLam3 -- definition of even
+              PLam3
                 ( \n ->
                     PIf3
                       (PEq3 (PVar3 n) (PLit3 0))

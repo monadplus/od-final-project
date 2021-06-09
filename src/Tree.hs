@@ -1,23 +1,13 @@
-{-# LANGUAGE RankNTypes, ScopedTypeVariables#-}
+{-# LANGUAGE RankNTypes #-}
+{-# LANGUAGE ScopedTypeVariables#-}
 module Tree where
+
+----------------------------------------------------------------
 
 import Control.Monad
 import Control.Monad.Reader hiding (fix)
 import Control.Monad.State hiding (fix)
 import Fix
-
-----------------------------------------------------------------
-
--- This version can only model back-edges.
-
-data PTree' v a
-  = Var' v
-  | Mu' (v -> PTree' v a)
-  | Empty'
-  | Fork' a (PTree' v a) (PTree' v a)
-newtype Tree' a = HideTree' {revealTree' :: forall v . PTree' v a}
-
-t1' = HideTree' (Mu' (\x -> Fork' 1 (Var' x) (Fork' 2 (Var' x) Empty')))
 
 ----------------------------------------------------------------
 -- Expressive Cross Edges
@@ -29,27 +19,30 @@ data PTree a v
   | Fork a (PTree a v) (PTree a v)
 newtype Tree a = HideTree {revealTree :: forall v . PTree a v}
 
+-- No induction
+
+t0 = HideTree (Mu (\_ -> [Fork 1 Empty Empty, Fork 2 Empty Empty]))
+
 -- back-edges
+
 t1 = HideTree (Mu (\(~(x:_)) ->
    [Fork 1 (Fork 2 (Var x) Empty) (Var x)]))
 
 -- cross-edges & mutual recursion
+
 t2 = HideTree (Mu (\(~(x:y:_)) ->
    [Fork 1 (Var y) (Var x), Fork 2 (Var x) (Var y)]))
 
-t3 = HideTree (Mu (\_ -> [Fork 1 Empty Empty, Fork 2 Empty Empty]))
+-- NOTE the lazy pattern-matching is really important otherwise the code will loop
 
 --------------------------------------------
 -- Operations on Cyclic Binary Trees
 
 -- The head of the output list has a special role by being interpreted as the root of the tree.
--- Similar to letrec in Section 3.2.
-
+--
 -- Alternatively, we could treat all trees equally.
--- This interpretation uses a forest of trees, or a multi-rooted tree.
--- We will see an example on Application
 
-
+--                               Var  Empty
 foldTree :: (a -> b -> b -> b) -> b -> b -> Tree a -> b
 foldTree f k1 k2 s = trans (revealTree s) where
   trans (Var x)        = x
@@ -57,6 +50,8 @@ foldTree f k1 k2 s = trans (revealTree s) where
   trans Empty          = k2
   trans (Fork x l r)   = f x (trans l) (trans r)
 
+--- >>> take 10 $ cfoldTree (\a l r -> a : l ++ r) [] t2
+--- [1,2,1,2,1,2,1,2,1,2]
 cfoldTree :: (a -> b -> b -> b) -> b -> Tree a -> b
 cfoldTree f k s = trans (revealTree s) where
   trans (Var x)      = x
@@ -178,14 +173,14 @@ ppEmpty      = "Empty"
 
 substPTree :: PTree a v -> (v -> PTree a v) -> PTree a v
 substPTree (Var v)       f  = f v
-substPTree (Mu g)        f  = Mu (\x -> map (flip substPTree f) (g x))
+substPTree (Mu g)        f  = Mu (map (`substPTree` f) . g)
 substPTree Empty         f  = Empty
 substPTree (Fork x l r)  f  = Fork x (substPTree l f) (substPTree r f)
 
 expandTree :: Tree a -> Tree a
 expandTree s = HideTree (unfoldPTree (revealTree s)) where
   unfoldPTree :: PTree a v -> PTree a v
-  unfoldPTree (Mu g)         = Mu (\x -> map (\t -> substPTree t (const t)) (g x))
+  unfoldPTree (Mu g)         = Mu (map (\t -> substPTree t (const t)) . g)
   unfoldPTree Empty          = Empty
   unfoldPTree (Fork x l r)   = Fork x (unfoldPTree l) (unfoldPTree r)
 

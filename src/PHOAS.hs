@@ -1,8 +1,11 @@
 {-# LANGUAGE RankNTypes #-}
-
 module PHOAS where
 
+----------------------------------------------------------------
+
 import Control.Monad.Reader hiding (fix)
+
+----------------------------------------------------------------
 
 -- | PHOAS-encoded Lambda Calculus
 --

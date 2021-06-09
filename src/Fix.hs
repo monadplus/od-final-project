@@ -1,5 +1,7 @@
 module Fix where
 
+----------------------------------------------------------------
+
 newtype Fix f = Fix {unFix :: f (Fix f)}
 
 fix :: (a -> a) -> a

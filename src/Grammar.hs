@@ -14,30 +14,29 @@ module Grammar where
 --------------------------------------------------------
 
 import Control.Applicative
-import Data.Foldable hiding (concat, all, concatMap, foldl)
-import Data.Traversable hiding (mapM, sequence)
 import Control.Monad
-import Data.List
-import Control.Monad.State
 import Control.Monad.Identity
+import Control.Monad.State
+import Data.Foldable hiding (all, concat, concatMap, foldl)
+import Data.List
+import Data.Traversable hiding (mapM, sequence)
 import Generic
 
 --------------------------------------------------------
 
--- Application of structured graphs: grammar analysis and transformations.
 -- We discuss 3 different operations on grammars:
--- - nullability
--- - first set
--- - normalization
+--  * nullability
+--  * first set
+--  * normalization
 
 -- Grammar: mutually recursive collection of patterns, where
---          patterns can also refer to themselves or other patterns.
+-- patterns can also refer to themselves or other patterns.
 
 data PatternF a
   = Term String -- Terminal
-  | Epsilon -- Empty string
-  | Seq a a -- Intersection
-  | Alt a a -- Union
+  | Epsilon     -- Empty string
+  | Seq a a     -- Intersection
+  | Alt a a     -- Union
   deriving (Functor, Foldable, Traversable)
 
 -----------------------------------
@@ -55,6 +54,10 @@ nullF (Alt g1 g2)  = g1 || g2
 -- >>> nullable g2
 nullable :: Graph PatternF -> Bool
 nullable = sfold nullF False
+
+-- sfold instead of blindly applying fix,
+-- it computes v' = f v and if v' == v then it stops the computation with the default value
+-- e.g. False.
 
 -- Does not terminate for some inputs
 -- e.g. 'badNullable g2' will loop
@@ -87,8 +90,8 @@ g3 =
 firstF :: PatternF (Bool, [String]) -> [String]
 firstF (Term s)              = [s]
 firstF Epsilon               = []
-firstF (Seq (b1,a1) (_,a2))  = if b1 then union a1 a2 else a1
-firstF (Alt (_,a1) (_,a2))   = union a1 a2
+firstF (Seq (b1,a1) (_,a2))  = if b1 then a1 `union` a2 else a1
+firstF (Alt (_,a1) (_,a2))   = a1 `union` a2
 
 nullFirstF :: PatternF (Bool, [String]) -> (Bool, [String])
 nullFirstF = compose (leftPart nullF) firstF

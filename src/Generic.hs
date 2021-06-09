@@ -9,11 +9,13 @@
 {-# OPTIONS_GHC -Wincomplete-patterns#-}
 module Generic where
 
+------------------------------------
+
 import Control.Applicative
-import Data.Foldable hiding (concat, all, concatMap, foldl, fold, toList, and)
-import Data.Traversable hiding (mapM, sequence)
 import Control.Monad
-import Control.Monad.Identity hiding (mfix, fix)
+import Control.Monad.Identity hiding (fix, mfix)
+import Data.Foldable hiding (all, and, concat, concatMap, fold, foldl, toList)
+import Data.Traversable hiding (mapM, sequence)
 import Fix
 
 ------------------------------------
@@ -41,18 +43,13 @@ type Stream a = Graph (StreamF a)
 onetwo = Hide (Mu (\(~(s:_)) ->
   [Cons 1 (In (Cons 2 (Var s)))]))
 
--- A list
-data S a = C a (S a)
-  deriving (Show)
-
--- >>> toS onetwo
-toS :: Stream a -> S a
-toS = ptoS . reveal  where
-  ptoS :: Rec (StreamF a) (S a) -> S a
+-- ad-hoc, later we will see a better definition
+toList' :: Stream a -> [a]
+toList' = ptoS . reveal where
   ptoS   (Var x)     = x
   ptoS   (Mu g)      = head $ fix (map ptoS' . g)
   ptoS   (In r)      = ptoS' r
-  ptoS'  (Cons x xs)  = C x (ptoS xs)
+  ptoS'  (Cons x xs)  = x : ptoS xs
 
 -------------------------------------
 -- Tree Revisited
@@ -67,7 +64,7 @@ tree =
   Hide
     ( Mu
         ( \(~(t1 : t2 : t3 : _)) ->
-            [ Fork 1 ((In (Fork 4 (Var t2) (In Empty)))) (Var t3),
+            [ Fork 1 (In (Fork 4 (Var t2) (In Empty))) (Var t3),
               Fork 2 (Var t1) (Var t3),
               Fork 3 (Var t2) (Var t1)
             ]
@@ -82,9 +79,9 @@ tree =
 
 gfold
   :: Functor f
-  => (t -> c) -- Applied to Var a
+  => (t -> c)            -- Applied to Var a
   -> (([t] -> [c]) -> c) -- Fixpoint-parametrized
-  -> (f c -> c) -- Actual fold
+  -> (f c -> c)          -- Actual fold
   -> Graph f
   -> c
 gfold v l f = trans . reveal where
@@ -254,6 +251,7 @@ hmapM2 runM f (In x)  = (join $ liftM f $ traverse (hmapM2 runM f) x) >>= return
 eqGraph :: EqF f => Graph f -> Graph f -> Bool
 eqGraph g1 g2 = eqRec 0 (reveal g1) (reveal g2)
 
+-- Notice, we are not using the gfold.
 eqRec :: EqF f => Int -> Rec f Int -> Rec f Int -> Bool
 eqRec _  (Var x)  (Var y)  = x == y
 eqRec n  (Mu g)   (Mu h)   =
@@ -262,6 +260,8 @@ eqRec n  (Mu g)   (Mu h)   =
   in and $ zipWith (eqF (eqRec (n + length a))) a b
 eqRec n  (In x)   (In y)   = eqF (eqRec n) x y
 eqRec _  _        _        = False
+
+-- Ad-hoc parametricity
 
 class Functor f => EqF f where
   eqF :: (r -> r -> Bool) -> f r -> f r -> Bool
