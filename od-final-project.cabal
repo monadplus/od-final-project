@@ -17,7 +17,8 @@ library
                       Stream,
                       Tree,
                       Generic,
-                      Grammar
+                      Grammar,
+                      PropertyGraph
     other-modules:    Fix
     build-depends:    containers ^>= 0.6,
                       mtl ^>= 2.2,
