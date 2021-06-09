@@ -4,9 +4,7 @@ module Tree where
 import Control.Monad
 import Control.Monad.Reader hiding (fix)
 import Control.Monad.State hiding (fix)
-
-fix :: (a -> a) -> a
-fix f = let r = f r in r
+import Fix
 
 ----------------------------------------------------------------
 

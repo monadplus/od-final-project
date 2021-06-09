@@ -1,8 +1,7 @@
 {-# LANGUAGE RankNTypes, NoMonomorphismRestriction, ScopedTypeVariables#-}
 module Stream where
 
-fix :: (a -> a) -> a
-fix f = let r = f r in r
+import Fix
 
 -- Allow modelling back-edges with simple mu-binders.
 -- Notice, only back-edges are needed since streams are linear.

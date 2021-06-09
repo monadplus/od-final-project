@@ -1,0 +1,39 @@
+\subsection{Generic Structured Graphs}\label{subsec:generic}
+
+This section shows that by using some lightweight \emph{datatype-generic programming} techniques it
+it possible to define highly reusable combinators for manipulating structured graphs of different types.
+
+A generic datatype for structured graphs can be defined as follows:
+
+\vspace{1mm}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs,samepage=true]{haskell}
+data Rec f a
+  = Var a
+  | Mu ([a] -> [f (Rec f a)])
+  | In (f (Rec f a))
+
+newtype Graph f = Hide {reveal :: forall a . Rec f a}
+\end{minted}
+\vspace{1mm}
+
+\textbf{Streams Revisited}\quad To recover streams, the type-constructor $f$ is instantiated as follows:
+
+\vspace{1mm}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs,samepage=true]{haskell}
+data StreamF a r = Cons a r
+  deriving (Functor, Foldable, Traversable)
+
+type Stream a = Graph (StreamF a)
+\end{minted}
+\vspace{1mm}
+
+\textbf{Trees Revisited}\quad To recover cyclic trees the functor $f$ is instantated as follows:
+
+\vspace{1mm}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs,samepage=true]{haskell}
+data TreeF a r = Empty | Fork a r r
+  deriving (Functor, Foldable, Traversable)
+
+type Tree a = Graph (TreeF a)
+\end{minted}
+\vspace{1mm}

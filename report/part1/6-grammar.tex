@@ -1,0 +1,34 @@
+\subsection{Application: Grammars}\label{subsec:application}
+
+The last section shows a concrete application of structured graphs:
+a grammar analysis and transformations. They discuss 3 different operations
+on grammars: \emph{nullability}, \emph{first set} and \emph{normalization}.
+
+The grammar is defined as a mutually recursive collection of patterns,
+where patterns can also refer to themselves or other patterns.
+
+\vspace{1mm}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs,samepage=true]{haskell}
+data PatternF a
+  = Term String -- Terminal
+  | Epsilon -- Empty string
+  | Seq a a -- Intersection
+  | Alt a a -- Union
+  deriving (Functor, Foldable, Traversable)
+\end{minted}
+\vspace{1mm}
+
+\textbf{Nullability}\quad Nullability determines whether a given nonterminal can produce the empty string. The analysis is defined as follows:
+
+\vspace{1mm}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs,samepage=true]{haskell}
+nullF :: PatternF Bool -> Bool
+nullF (Term s)     = False
+nullF Epsilon      = True
+nullF (Seq g1 g2)  = g1 && g2
+nullF (Alt g1 g2)  = g1 || g2
+
+nullable :: Graph PatternF -> Bool
+nullable = sfold nullF False
+\end{minted}
+\vspace{1mm}

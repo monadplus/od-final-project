@@ -6,13 +6,7 @@ module Binder where
 
 import Control.Monad.Reader hiding (fix)
 import PHOAS
-
-------------------------------------------
-
--- The problem with Fix f = Fix { unFix :: f (Fix f)}
--- is that it does not share results.
-fix :: (a -> a) -> a
-fix f = let r = f r in r
+import Fix
 
 ------------------------------------------
 -- Extension of PHOAS-encoded lambda calculus with mu-binder.

@@ -1,7 +1,7 @@
-\section{Recursive Binders using Parametric HOAS}\label{sec:recursive}
+\subsection{Recursive Binders using Parametric HOAS}\label{subsec:recursive}
 
-\subsection{Encoding $\mu$-binders with Parametric HOAS}
-\label{subsec:binder}
+\subsubsection{Encoding $\mu$-binders with Parametric HOAS}
+\label{subsubsec:binder}
 
 One way to support recursive functions in our lambda calculus interpreter is to extend it with a recursive binder $\mu$. With such a $\mu$ binder the factorial function can be defined as follows $\mu f. \lambda n \ \to \ if \ (n \equiv 0) \ then \ 1 \ else \ n * f \ (n - 1)$. Listing \ref{lst:binder} shows the extensions to the calculus and interpreter of Listings \ref{lst:calculus}.
 

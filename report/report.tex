@@ -7,7 +7,7 @@
 \pagestyle{fancy}
 \fancyhf{}
 \rhead{Functional Programming with Structured Graphs}
-\lhead{Open Data}
+\lhead{Open Data: Final Project}
 \rfoot{Page \thepage}
 
 \title{%
@@ -23,17 +23,11 @@
 \begin{document}
 \maketitle
 
-This project is based on \textit{Functional Programming with Structured Graphs} by Bruno Oliveira and William Cook \cite{oliveira2012functional}. The original work was published at \textit{ICFP '12: Proceedings of the 17th ACM SIGPLAN Internal Conference of Functional Programming} \cite{icfp12}.
+The project can be found at \href{https://github.com/monadplus/od-final-project}{Github}.
+The project includes the sources of this report and the actual implementation of \emph{structured graphs} and its adaptation to \emph{knowledge graphs}.
 
-\textit{Functional Programming with Structured Graphs} presents a new functional programming model for generic graphs called \textit{structured graphs}. This model adds explicit definition and manipulation of \textit{cycles} and \textit{sharing}. The representation of cycles and sharing is implemented via \textit{recursive binders} and uses and encoding inspired by \textit{parametric higher-order abstract syntax}. The \textit{well-formedness} of the graph structure is ensured statically.
-
-\input{1-intro}
-\input{2-phoas}
-\input{3-recursive}
-\input{4-graphs}
-\input{5-generic}
-\input{6-application}
-\input{7-related}
+\import{part1}{main.tex}
+\import{part2}{main.tex}
 
 \bibliographystyle{plainnat}
 \bibliography{refs}
