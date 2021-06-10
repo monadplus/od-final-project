@@ -30,6 +30,8 @@ import qualified Data.Set as Set
 import Fix
 import qualified Data.Foldable as Foldable
 import Data.Maybe
+import Data.Monoid (First(..))
+import Data.Coerce(coerce)
 
 --------------------------------------------
 
@@ -149,14 +151,19 @@ instance EqF PropertyGraphF where
 data V = V Label Properties
   deriving stock (Show, Eq, Ord)
 
-data Tree = Tree V [Tree]
+data Tree a = Tree a [Tree a]
   deriving stock (Show, Eq, Ord)
 
-type Forest = [Tree]
+type Forest a = [Tree a]
 
-acyclic :: Tree -> Tree
+findTree :: Eq a => a -> Forest a -> Maybe (Tree a)
+findTree v = getFirst . foldMap (coerce . findNode) where
+  findNode tree@(Tree a descendents)
+    | a == v = Just tree
+    | otherwise = findTree v descendents
+
+acyclic :: (Eq a, Ord a) => Tree a -> Tree a
 acyclic = go Set.empty where
-  go :: Set V -> Tree -> Tree
   go visited (Tree v descendents) =
     let visited' = Set.insert v visited
         filterRec =
@@ -164,30 +171,46 @@ acyclic = go Set.empty where
             List.filter (\(Tree v' _) -> Set.notMember v' visited')
     in Tree v (filterRec descendents)
 
-flattenF :: PropertyGraphF Forest -> Forest
+flattenF :: PropertyGraphF (Forest V) -> Forest V
 flattenF (Node label props edges) =
   let adjacents = foldMap (\(Edge _ _ nodes) -> nodes) edges
       vertex = V label props
       tree = acyclic (Tree vertex adjacents)
   in [tree]
 
-flatten :: PropertyGraph -> Forest
+flatten :: PropertyGraph -> Forest V
 flatten = sfold' flattenF []
 
-reachability :: PropertyGraph -> V -> V -> Bool
-reachability = undefined
+{- |
+>>> john = V "Person" [("name", "John")]
+>>> chris = V "Person" [("name", "Chris")]
+>>> stuart = V "Person" [("name", "Stuart")]
+
+>>> reachability john stuart pg2
+True
+
+>>> reachability john chris pg2
+False
+-}
+reachability :: V -> V -> PropertyGraph -> Bool
+reachability orig dest = go . flatten  where
+  go :: Forest V -> Bool
+  go forest = fromMaybe False $ do
+    origin <- findTree orig forest
+    _ <- findTree dest [origin]
+    return True
 
 --------------------------------------------------------
 
 showName :: V -> String
 showName (V _ props) = maybe "unnamed" show (Map.lookup "name" props)
 
-ppTree :: Int -> Tree -> String
+ppTree :: Int -> Tree V -> String
 ppTree width (Tree v descendents) =
   let prefix = showName v
   in prefix ++ ppTrees (width + length prefix) descendents
 
-ppTrees :: Int -> [Tree] -> String
+ppTrees :: Int -> [Tree V] -> String
 ppTrees _ [] = ""
 ppTrees width trees =
   let prefix = "--" :: String
@@ -233,8 +256,6 @@ pg1 =
       )
     )
 
--- John and Chris knows Nancy
--- Nancy knows Stuart
 pg2 =
   Hide
     ( Mu
