@@ -15,6 +15,7 @@ import Control.Applicative
 import Control.Monad
 import Control.Monad.Identity hiding (fix, mfix)
 import Data.Foldable hiding (all, and, concat, concatMap, fold, foldl, toList)
+import qualified Data.Foldable as Foldable
 import Data.Traversable hiding (mapM, sequence)
 import Fix
 
@@ -115,6 +116,14 @@ sfold
   -> Graph f
   -> t
 sfold alg k = gfold id (head . fixVal (repeat k)) alg
+
+sfold'
+  :: (Eq t, Monoid t, Functor f)
+  => (f t -> t)
+  -> t
+  -> Graph f
+  -> t
+sfold' alg k = gfold id (Foldable.fold . fixVal (repeat k)) alg
 
 fixVal :: Eq a => a -> (a -> a) -> a
 fixVal v f = if v==v' then v else fixVal v' f

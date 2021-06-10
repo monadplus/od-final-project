@@ -161,21 +161,14 @@ flatten dict =
   let f (v, vs) = Set.insert v vs
   in foldMap f (Map.toList dict)
 
-reachableF :: Rec PropertyGraphF Reachable -> Reachable
-reachableF (Var x) = x
-reachableF (Mu g)  =
-  let g' = (map (f . fmap reachableF) . g)
-  in Foldable.fold (fixVal (repeat Map.empty) g')
-reachableF (In fa)  = f (fmap reachableF fa)
-
-f :: PropertyGraphF Reachable -> Reachable
-f (Node label props edges) =
+reachableF :: PropertyGraphF Reachable -> Reachable
+reachableF (Node label props edges) =
   let adjacents = foldMap (\(Edge _ _ nodes) -> nodes) edges
       vertex = V label props
   in Map.singleton vertex (flatten adjacents)
 
 reachableSet :: PropertyGraph -> Reachable
-reachableSet = reachableF . reveal
+reachableSet = sfold' reachableF Map.empty
 
 testReachableSet :: PropertyGraph -> IO ()
 testReachableSet = putStrLn . ppReachable . reachableSet
