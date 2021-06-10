@@ -1,5 +1,7 @@
 \subsection{Introduction}\label{subsec:intro}
 
+\textit{Functional Programming with Structured Graphs} presents a new functional programming model for generic graphs called \textit{structured graphs}. This model adds explicit definition and manipulation of \textit{cycles} and \textit{sharing}. The representation of cycles and sharing is implemented via \textit{recursive binders} and uses and encoding inspired by \textit{parametric higher-order abstract syntax}. The \textit{well-formedness} of the graph structure is ensured statically.
+
 % Functional programming languages excel at manipulating \textit{tree structures}. \textit{Algebraic datatypes} and \textit{pattern matching} are used to describe the tree structure of values and manipulate those, respectively. These mechanisms provide a high-level declarative programming model which avoids the explicit manipulation of pointers. However, there are many kinds of data that are more naturally represented as graph structures rather than trees. Some examples are:
 
 % \begin{itemize}
@@ -32,5 +34,5 @@ The contributions of Oliviera \& Cook are summarised at:
 \begin{itemize}
   \item \textbf{Structured graphs}. A new programming model extending the classic notion of \emph{algebraic datatypes} with \emph{cycles} and \emph{sharing}. This model supports the same benefits as algebraic datatypes and facilitates reasoning over cyclic structures. The binding infraestructure is conveniently defined and manipulated using a PHOAS-based representation.
   \item \textbf{Generic combinators and infraestructure}. Additional convenience is provided through the use of generic combinators for fold and transformations. Such generic combinators can also encapsulate the use of special \emph{fixpoints} for certain operations.
-  \item \textbf{Recursive binders using PHOAS}. They also show how to define \emph{recursive binders} with PHOAS. The recursive multi-binder enables the definition of cross edges.
+  \item \textbf{Recursive binders using PHOAS}. It is also shown how to define \emph{recursive binders} with PHOAS. The recursive multi-binder enables the definition of cross edges.
 \end{itemize}

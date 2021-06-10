@@ -1,0 +1,57 @@
+\subsection{Functional Property Graphs Algorithms}
+\label{subsec:algorithms}
+
+In this section, we show how to adapt common graph operations such as graph \emph{reachability} to functional property graphs. Adapting imperative graph algorithms to this representation is at least challenging and requires a deep understanding of fixpoint representations.
+
+The following generalized operations are required in order to implement the common graph operations:
+
+\vspace{1mm}
+\begin{minted}[xleftmargin=10pt,fontsize=\footnotesize, style=emacs,samepage=true,breaklines]{haskell}
+sfold'
+  :: (Eq t, Monoid t, Functor f)
+  => (f t -> t)
+  -> t
+  -> Graph f
+  -> t
+sfold' alg k = gfold id (Foldable.fold . fixVal (repeat k)) alg
+\end{minted}
+\vspace{1mm}
+
+\textbf{Reachability}\quad Reachability finds a walk between two nodes. The algorithm can be easily adapted to \emph{label-constrainted reachability}.
+
+\vspace{1mm}
+\begin{minted}[xleftmargin=10pt,fontsize=\footnotesize, style=emacs,samepage=true,breaklines]{haskell}
+acyclic :: (Eq a, Ord a) => Tree a -> Tree a
+acyclic = go Set.empty where
+  go visited (Tree v descendents) =
+    let visited' = Set.insert v visited
+        filterRec =
+          fmap (go visited') .
+            List.filter (\(Tree v' _) -> Set.notMember v' visited')
+    in Tree v (filterRec descendents)
+
+flattenF :: PropertyGraphF (Forest V) -> Forest V
+flattenF (Node label props edges) =
+  let adjacents = foldMap (\(Edge _ _ nodes) -> nodes) edges
+      vertex = V label props
+      tree = acyclic (Tree vertex adjacents)
+  in [tree]
+
+flatten :: PropertyGraph -> Forest V
+flatten = sfold' flattenF []
+
+findTree :: Eq a => a -> Forest a -> Maybe (Tree a)
+findTree v = getFirst . foldMap (coerce . findNode) where
+  findNode tree@(Tree a descendents)
+    | a == v = Just tree
+    | otherwise = findTree v descendents
+
+reachability :: V -> V -> PropertyGraph -> Bool
+reachability orig dest = go . flatten  where
+  go :: Forest V -> Bool
+  go forest = fromMaybe False $ do
+    origin <- findTree orig forest
+    _ <- findTree dest [origin]
+    return True
+\end{minted}
+\vspace{1mm}

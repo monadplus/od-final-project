@@ -8,7 +8,7 @@ The grammar is defined as a mutually recursive collection of patterns,
 where patterns can also refer to themselves or other patterns.
 
 \vspace{1mm}
-\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs,samepage=true]{haskell}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs,samepage=true]{haskell}
 data PatternF a
   = Term String -- Terminal
   | Epsilon -- Empty string
@@ -21,7 +21,7 @@ data PatternF a
 \textbf{Nullability}\quad Nullability determines whether a given nonterminal can produce the empty string. The analysis is defined as follows:
 
 \vspace{1mm}
-\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs,samepage=true]{haskell}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs,samepage=true]{haskell}
 nullF :: PatternF Bool -> Bool
 nullF (Term s)     = False
 nullF Epsilon      = True

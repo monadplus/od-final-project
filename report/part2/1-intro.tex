@@ -1,0 +1,14 @@
+\subsection{Property Graphs}
+\label{subsec:property-graphs}
+
+A \emph{property graph} $G$ is a tuple $(V, E, \rho, \lambda, \sigma)$ , where:
+
+\begin{enumerate}[label=(\roman*)]
+  \item $V$ is a finite set of vertices (or nodes).
+  \item $E$ is a finite set of edges such that $V$ and $E$ have no elements in common.
+  \item $\rho: E \to (V \times V)$ is a total function. Intuitively, $\rho(e) = (v_{1}, v_{2})$ indicates that $e$ is a directed edge from node $v_{1}$ to node $v_{2}$ in $G$.
+  \item $\lambda: (V \cup E) \to Lab$  is a total function with $Lab$ a set of labels. Intuitively, if $v \in V$ (respectively, $e \in E$) and $\lambda(v) = l$ (respectively, $\lambda(e) = l$), then $l$ is the label of node $v$ (respectively, edge $e$) in $G$.
+  \item $\sigma: (V \cup E) \times Prop \to Val$ is a partial function with $Prop$ a finite set of properties and $Val$ a set of values. Intuitively, if $v \in V$ (respectively, $e \in E$), $p \in Prop$ and $\sigma(v, p) = s$ (respectively, $\sigma(e,p) = s$), then $s$ is the value of property $p$ for node $v$ (respectively, edge $e$) in the property graph G.
+\end{enumerate}
+
+This formal definition is from \emph{Foundations of Modern Query Languages for Graph Databases} \cite{angles2017foundations}.

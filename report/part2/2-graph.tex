@@ -1,0 +1,117 @@
+\subsection{Property Graphs adapted to \mbox{Functional Programming}}
+\label{subsec:adapting}
+
+In this section, we show how to adapt the definition of section \ref{subsec:generic} to \emph{property graphs}. As we did with \emph{streams} and \emph{cyclic trees}, we can recover
+property graphs by instantiate the functor $f$ as follows:
+
+\vspace{1mm}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs,samepage=true]{haskell}
+data PropertyGraphF r = Node
+  { label :: Label,
+    properties :: Properties,
+    edges :: [Edge r]
+  }
+  deriving (Functor, Foldable, Traversable)
+
+type PropertyGraph = Graph PropertyGraphF
+\end{minted}
+\vspace{1mm}
+
+An example of a property graph is show in Listing \ref{lst:property-graph-example}.
+
+This model has all the good qualities of a PHOAS-based representation:
+
+\begin{itemize}
+  \item Ensures well-scopedeness and prevents the creation of junk terms;
+  \item Allows the definition of cross edges as well as back edges;
+  \item Makes operations easy to define and without needing to unroll cycles;
+\end{itemize}
+
+A benefit of working on a generic structure is that operations can be made generic.
+
+\textbf{Generalizing Folds}\quad The function \code{gfold} generalizes several fold-like functions:
+
+\vspace{1mm}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs,samepage=true]{haskell}
+gfold
+  :: Functor f
+  => (t -> c)
+  -> (([t] -> [c]) -> c)
+  -> (f c -> c)
+  -> Graph f
+  -> c
+gfold v l f = trans . reveal where
+  trans (Var x)   = v x
+  trans (Mu g)    = l (map (f . fmap trans) . g)
+  trans (In fa)   = f (fmap trans fa)
+\end{minted}
+\vspace{1mm}
+
+\begin{listing}[H]
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs,samepage=true]{haskell}
+Hide
+  ( Mu
+    ( \(~(john : nancy : _)) ->
+        [
+          Node {
+            label = "Person",
+            properties = [("name", "John")],
+            edges =
+              [ Edge
+                  { label = "fatherOf",
+                    properties = [],
+                    node = Var nancy
+                  },
+                Edge
+                  { label = "livingWith",
+                    properties = [],
+                    node = Var nancy
+                  }
+              ]
+          },
+          Node {
+            label = "Person",
+            properties = [("name", "Nancy")],
+            edges =
+              [ Edge
+                  { label = "daughterOf",
+                    properties = [],
+                    node = Var john
+                  }
+              ]
+          }
+        ]
+    )
+  )
+\end{minted}
+\caption{Example of Property Graph using Structured Graphs.}
+\label{lst:property-graph-example}
+\end{listing}
+
+\textbf{Equality}\quad A generic version of structural equality can be defined by the function \code{geq}. The function \code{eqRec} deals with the generic binding structure, while the typeclass \code{EqF} provides equality for the structure-specific parts of the graph:
+
+\vspace{1mm}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs,samepage=true,breaklines]{haskell}
+eqGraph :: EqF f => Graph f -> Graph f -> Bool
+eqGraph g1 g2 = eqRec 0 (reveal g1) (reveal g2)
+
+eqRec :: EqF f => Int -> Rec f Int -> Rec f Int -> Bool
+eqRec _  (Var x)  (Var y)  = x == y
+eqRec n  (Mu g)   (Mu h)   =
+  let  a      = g (iterate succ n)
+       b      = h (iterate succ n)
+  in and $ zipWith (eqF (eqRec (n + length a))) a b
+eqRec n  (In x)   (In y)   = eqF (eqRec n) x y
+eqRec _  _        _        = False
+
+class Functor f => EqF f where
+  eqF :: (r -> r -> Bool) -> f r -> f r -> Bool
+
+instance EqF PropertyGraphF where
+  eqF eq (Node label1 properties1 edges1) (Node label2 properties2 edges2) =
+    label1 == label2
+      && properties1 == properties2
+      && and (zipWith (eqF eq) edges1 edges2)
+\end{minted}
+\vspace{1mm}
+

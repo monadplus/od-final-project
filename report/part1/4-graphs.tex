@@ -1,6 +1,6 @@
 \subsection{Structured Graphs}\label{subsec:graphs}
 
-Structured graphs use the recursive binders introduced in Section ref{sec:recursive} to describe cyclic structures. We consider two types of cyclic structures: \emph{cyclic streams} and \emph{cyclic binary trees}.
+Structured graphs use the recursive binders introduced in section \ref{subsec:recursive} to describe cyclic structures. We consider two types of cyclic structures: \emph{cyclic streams} and \emph{cyclic binary trees}.
 
 \subsubsection{Cyclic Streams and Back Edges}
 \label{subsubsec:streams}
@@ -8,7 +8,7 @@ Structured graphs use the recursive binders introduced in Section ref{sec:recurs
 A datatype for cyclic streams can be defined as follows:
 
 \vspace{1mm}
-\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs]{haskell}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs]{haskell}
 data PStream a v
   = Var v
   | Mu (v -> PStream a v)
@@ -23,7 +23,7 @@ newtype Stream a = HideStream {revealStream :: <$\forall v.$> PStream a v}
 The datatype for cyclic binary trees is as follows:
 
 \vspace{1mm}
-\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs,samepage=true]{haskell}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs,samepage=true]{haskell}
 data PTree a v
   = Var v
   | Mu ([v] -> [PTree a v])

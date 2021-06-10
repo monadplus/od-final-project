@@ -3,10 +3,10 @@
 \subsubsection{Encoding $\mu$-binders with Parametric HOAS}
 \label{subsubsec:binder}
 
-One way to support recursive functions in our lambda calculus interpreter is to extend it with a recursive binder $\mu$. With such a $\mu$ binder the factorial function can be defined as follows $\mu f. \lambda n \ \to \ if \ (n \equiv 0) \ then \ 1 \ else \ n * f \ (n - 1)$. Listing \ref{lst:binder} shows the extensions to the calculus and interpreter of Listings \ref{lst:calculus}.
+One way to support recursive functions in the lambda calculus interpreter is to extend it with a recursive binder $\mu$. With such a $\mu$ binder the factorial function can be defined as follows $\mu f. \lambda n \ \to \ if \ (n \equiv 0) \ then \ 1 \ else \ n * f \ (n - 1)$. Listing \ref{lst:binder} shows the extensions to the calculus and interpreter of Listings \ref{lst:calculus}.
 
 \begin{listing}[H]
-\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs]{haskell}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs]{haskell}
 data PLambda a
   = <$Mu_{1}$> (a -> PLambda a)
   | <$Mu_{2}$> ([a] -> [PLambda a])

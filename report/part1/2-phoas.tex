@@ -15,7 +15,7 @@ To illustrate the advantages of PHOAS in more detail, they used the lambda calcu
 \textbf{No explicit manipulation of environments}\quad Functions defined over PHOAS-based representations avoid the need for explicit manipulation of environments carrying the binding information. Instead, environments are implicitly handled by the meta-language. % The evaluator for our lambda calculus presented in Figure \ref{lst:evaluator} illustrates this.
 
 \begin{listing}[H]
-\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs]{haskell}
+\begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs]{haskell}
 data PLambda a
 = PVar a
 | PLit Int
@@ -34,7 +34,7 @@ newtype Lambda = forall a. PLambda a
 \end{listing}
 
 % \begin{listing}[H]
-% \begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\small, style=emacs]{haskell}
+% \begin{minted}[escapeinside=<>,mathescape=true, xleftmargin=10pt,fontsize=\footnotesize, style=emacs]{haskell}
 % data Value
 %   = VLit Int
 %   | VBool Bool

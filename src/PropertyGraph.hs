@@ -35,26 +35,6 @@ import Data.Coerce(coerce)
 
 --------------------------------------------
 
-{-
-Property graph:
-
-Nodes = entities
-Edges = relations between entities
-Nodes and edges may be labeled and may have a set of properties (key-value pairs)
-Edges are directed
-Multi-graphs are allowed (more than one edge per node).
-
-Graph operations:
-- Content-based queries
-- Topological queries: adjacency, reachability, label-constrained reachability, pattern matching (graph isomorphism problem)
-- Hybrid approaches
-
-Graph Metrics:
-- Centrility: page rank, betweenness, closeness
-- Path finding algorithms: minimum weight spanning tree, single source shortest path
-- Community detection algorithms: triangle counting, louvain, strongly connected components
--}
-
 data Value
   = VBool Bool
   | VInt Int
@@ -181,17 +161,6 @@ flattenF (Node label props edges) =
 flatten :: PropertyGraph -> Forest V
 flatten = sfold' flattenF []
 
-{- |
->>> john = V "Person" [("name", "John")]
->>> chris = V "Person" [("name", "Chris")]
->>> stuart = V "Person" [("name", "Stuart")]
-
->>> reachability john stuart pg2
-True
-
->>> reachability john chris pg2
-False
--}
 reachability :: V -> V -> PropertyGraph -> Bool
 reachability orig dest = go . flatten  where
   go :: Forest V -> Bool
@@ -201,6 +170,28 @@ reachability orig dest = go . flatten  where
     return True
 
 --------------------------------------------------------
+-- Iterative algorithms
+
+{-
+Graph operations:
+- Content-based queries
+- Topological queries: adjacency, reachability, label-constrained reachability, pattern matching (graph isomorphism problem)
+- Hybrid approaches
+
+Graph Metrics:
+- Centrility: page rank, betweenness, closeness
+- Path finding algorithms: minimum weight spanning tree, single source shortest path
+- Community detection algorithms: triangle counting, louvain, strongly connected components
+-}
+
+-- Modeling an iterative algorithm with convergence is hard.
+
+fixValTol :: (Ord a, Num a) => a -> a -> (a -> a) -> a
+fixValTol v tol f = if abs (v-v') < tol then v else fixVal v' f
+    where v' = f v
+
+--------------------------------------------------------
+-- Printing for test
 
 showName :: V -> String
 showName (V _ props) = maybe "unnamed" show (Map.lookup "name" props)
@@ -219,6 +210,9 @@ ppTrees width trees =
 
 flattenAndPrint :: PropertyGraph -> IO ()
 flattenAndPrint = putStrLn . ppTrees 0 . flatten
+
+--------------------------------------------------------
+-- Instances
 
 pg1 =
   Hide
@@ -242,7 +236,7 @@ pg1 =
                 ]
             },
             Node {
-              label = "Robot",
+              label = "Person",
               properties = [("name", "Nancy")],
               edges =
                 [ Edge
@@ -338,4 +332,34 @@ pg3 =
                 ]
             }
         )
+    )
+
+
+scoreNode :: Double -> PropertyGraphF r
+scoreNode score =
+  Node
+    { label = "Node",
+      properties = [("score", VDouble score)],
+      edges = []
+    }
+
+directEdge :: forall r. r -> Edge r
+directEdge x =
+  Edge
+    { label = "",
+      properties = [],
+      node = x
+    }
+
+-- triangle topology (i.e. cyclic topology)
+pg4 =
+  Hide
+    ( Mu
+      ( \(~(n1 : n2 : n3 : _)) ->
+          [
+            (scoreNode 1.0){edges = [directEdge (Var n2)]},
+            (scoreNode 1.0){edges = [directEdge (Var n3)]},
+            (scoreNode 1.0){edges = [directEdge (Var n1)]}
+          ]
+      )
     )
