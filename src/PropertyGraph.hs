@@ -22,13 +22,14 @@ module PropertyGraph where
 
 import Data.Map.Strict (Map)
 import qualified Data.Map.Strict as Map
-import Generic hiding (StreamF(..))
+import Generic hiding (StreamF(..), Stream(..), Tree(..), TreeF(..))
 import Data.String
 import qualified Data.List as List
 import Data.Set (Set)
 import qualified Data.Set as Set
 import Fix
 import qualified Data.Foldable as Foldable
+import Data.Maybe
 
 --------------------------------------------
 
@@ -148,32 +149,43 @@ instance EqF PropertyGraphF where
 data V = V Label Properties
   deriving stock (Show, Eq, Ord)
 
-type Reachable = Map V (Set V)
+data Tree = Tree V [Tree]
+  deriving stock (Show, Eq, Ord)
 
-ppReachable :: Reachable -> String
-ppReachable dict =
-  List.intercalate "\n" $ fmap showPair (Map.toList dict)
-  where
-    showPair (v, vs) = show v ++ ":\n" ++ List.intercalate "\n" (fmap (('\t' :) . show) (Set.toList vs))
+type Forest = [Tree]
 
-flatten :: Reachable -> Set V
-flatten dict =
-  let f (v, vs) = Set.insert v vs
-  in foldMap f (Map.toList dict)
-
-reachableF :: PropertyGraphF Reachable -> Reachable
-reachableF (Node label props edges) =
+flattenF :: PropertyGraphF Forest -> Forest
+flattenF (Node label props edges) =
   let adjacents = foldMap (\(Edge _ _ nodes) -> nodes) edges
       vertex = V label props
-  in Map.singleton vertex (flatten adjacents)
+  in [Tree vertex adjacents]
 
-reachableSet :: PropertyGraph -> Reachable
-reachableSet = sfold' reachableF Map.empty
+-- Breaks cycles since reachability does not need them.
+flatten :: PropertyGraph -> Forest
+flatten = sfold' flattenF []
 
-testReachableSet :: PropertyGraph -> IO ()
-testReachableSet = putStrLn . ppReachable . reachableSet
+reachability :: PropertyGraph -> V -> V -> Bool
+reachability = undefined
 
----------------------------------------------------------
+--------------------------------------------------------
+
+showName :: V -> String
+showName (V _ props) = maybe "unnamed" show (Map.lookup "name" props)
+
+ppTree :: Int -> Tree -> String
+ppTree width (Tree v descendents) =
+  let prefix = showName v
+  in prefix ++ ppTrees (width + length prefix) descendents
+
+ppTrees :: Int -> [Tree] -> String
+ppTrees _ [] = ""
+ppTrees width trees =
+  let prefix = "--" :: String
+      ws = List.replicate width ' '
+  in List.intercalate ('\n' : ws ++ prefix) ("": fmap (ppTree (width + length prefix)) trees)
+
+flattenAndPrint :: PropertyGraph -> IO ()
+flattenAndPrint = putStrLn . ppTrees 0 . flatten
 
 pg1 =
   Hide
