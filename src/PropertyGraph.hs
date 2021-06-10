@@ -25,6 +25,10 @@ import qualified Data.Map.Strict as Map
 import Generic hiding (StreamF(..))
 import Data.String
 import qualified Data.List as List
+import Data.Set (Set)
+import qualified Data.Set as Set
+import Fix
+import qualified Data.Foldable as Foldable
 
 --------------------------------------------
 
@@ -49,29 +53,23 @@ Graph Metrics:
 -}
 
 data Value
-  = VString String
+  = VBool Bool
   | VInt Int
-  deriving stock (Eq)
+  | VDouble Double
+  | VString String
+  deriving stock (Eq, Ord)
+
 instance Show Value where
   show  = \case
+    VBool b -> show b
+    VInt i -> show i
+    VDouble d -> show d
     VString s -> show s
-    VInt s -> show s
 
 instance IsString Value where
   fromString = VString
 
 type Properties = Map String Value
-
-showProperties :: Properties -> String
-showProperties props
-  | null props = ""
-  | otherwise =
-      let xs = take 2 $ Map.toList props
-      in "{" ++ showPairs xs ++ dots props ++ "}"
-  where
-    showPair (k, v) = show k ++ ":" ++ show v
-    showPairs = List.intercalate "," . fmap showPair
-    dots xs = if length xs > 2 then "..." else ""
 
 newtype Label = Label { unLabel :: String}
   deriving stock (Show)
@@ -85,10 +83,6 @@ data Edge r = Edge
   deriving stock (Show)
   deriving stock (Functor, Foldable, Traversable)
 
-showEdge :: (r -> String) -> Edge r -> String
-showEdge sh Edge{label, properties, node} =
-  "[" ++ unLabel label ++ showProperties properties ++ "]" ++ "->" ++ sh node
-
 data PropertyGraphF r = Node
   { label :: Label,
     properties :: Properties,
@@ -98,64 +92,97 @@ data PropertyGraphF r = Node
 
 type PropertyGraph = Graph PropertyGraphF
 
+---------------------------------------------------------
+-- Pretty Print
+
+showProperties :: Properties -> String
+showProperties props
+  | null props = ""
+  | otherwise =
+      let xs = take 2 $ Map.toList props
+      in "{" ++ showPairs xs ++ dots props ++ "}"
+  where
+    showPair (k, v) = show k ++ ":" ++ show v
+    showPairs = List.intercalate "," . fmap showPair
+    dots xs = if length xs > 2 then "..." else ""
+
+showEdge :: (r -> String) -> Edge r -> String
+showEdge sh Edge{label, properties, node} =
+  "[" ++ unLabel label ++ showProperties properties ++ "]" ++ "->" ++ sh node
+
 instance ShowF PropertyGraphF where
   showF sh Node {label, properties, edges} =
-    "("
-      ++ unLabel label
-      ++ showProperties properties
-      ++ ")"
-      ++ if null edges then "" else "-"
-      ++ List.intercalate "\n-" (fmap (showEdge sh) edges)
+    nodeStr
+      ++ List.intercalate ('\n' : ws ++ "-") ("" : fmap (showEdge sh) edges)
+    where
+      nodeStr =
+        "("
+          ++ unLabel label
+          ++ showProperties properties
+          ++ ")"
+      ws = replicate (length  nodeStr) ' '
 
--- >>> putStrLn $ showGraph pg1
--- (Author{"name":"Arnau"})
+---------------------------------------------------------
+-- Structural Equality
+
+instance EqF Edge where
+  eqF eq (Edge label1 properties1 r1) (Edge label2 properties2 r2) =
+    label1 == label2
+      && properties1 == properties2
+      && eq r1 r2
+
+-- >>> eqGraph pg1 pg1
+-- True
+--
+-- >>> eqGraph pg1 pg2
+-- False
+instance EqF PropertyGraphF where
+  eqF eq (Node label1 properties1 edges1) (Node label2 properties2 edges2) =
+    label1 == label2
+      && properties1 == properties2
+      && and (zipWith (eqF eq) edges1 edges2)
+
+---------------------------------------------------------
+-- Algorithms
+
+data V = V Label Properties
+  deriving stock (Show, Eq, Ord)
+
+type Reachable = Map V (Set V)
+
+ppReachable :: Reachable -> String
+ppReachable dict =
+  List.intercalate "\n" $ fmap showPair (Map.toList dict)
+  where
+    showPair (v, vs) = show v ++ ":\n" ++ List.intercalate "\n" (fmap (('\t' :) . show) (Set.toList vs))
+
+flatten :: Reachable -> Set V
+flatten dict =
+  let f (v, vs) = Set.insert v vs
+  in foldMap f (Map.toList dict)
+
+reachableF :: Rec PropertyGraphF Reachable -> Reachable
+reachableF (Var x) = x
+reachableF (Mu g)  =
+  let g' = (map (f . fmap reachableF) . g)
+  in Foldable.fold (fixVal (repeat Map.empty) g')
+reachableF (In fa)  = f (fmap reachableF fa)
+
+f :: PropertyGraphF Reachable -> Reachable
+f (Node label props edges) =
+  let adjacents = foldMap (\(Edge _ _ nodes) -> nodes) edges
+      vertex = V label props
+  in Map.singleton vertex (flatten adjacents)
+
+reachableSet :: PropertyGraph -> Reachable
+reachableSet = reachableF . reveal
+
+testReachableSet :: PropertyGraph -> IO ()
+testReachableSet = putStrLn . ppReachable . reachableSet
+
+---------------------------------------------------------
+
 pg1 =
-  Hide
-    ( In
-        ( Node
-            { label = "Author",
-              properties = [("name", "Arnau")],
-              edges = []
-            }
-        )
-    )
-
--- >>> putStrLn $ showGraph pg2
--- (Author{"name":"Nietzsche"})-[AuthorOf]->(Book{"title":"Also sprach Zarathustra"})
-pg2 =
-  Hide
-    ( In
-        ( Node
-            { label = "Author",
-              properties = [("name", "Nietzsche")],
-              edges =
-                [ Edge
-                    { label = "AuthorOf",
-                      properties = [],
-                      node =
-                        In
-                          ( Node
-                              { label = "Book",
-                                properties = [("title", "Also sprach Zarathustra")],
-                                edges = []
-                              }
-                          )
-                    }
-                ]
-            }
-        )
-    )
-
--- Mutually recursive edges
--- Multi-edge
-
--- >>> putStrLn $ showGraph pg3
--- Mu (
---   a => (Person{"name":"John"})-[fatherOf]->b
---                               -[livingWith]->b
---   b => (Person{"name":"Nancy"})-[daughterOf]->a
--- )
-pg3 =
   Hide
     ( Mu
       ( \(~(john : nancy : _)) ->
@@ -177,7 +204,7 @@ pg3 =
                 ]
             },
             Node {
-              label = "Person",
+              label = "Robot",
               properties = [("name", "Nancy")],
               edges =
                 [ Edge
@@ -191,4 +218,88 @@ pg3 =
       )
     )
 
--- TODO implement reachability and page rank
+-- John and Chris knows Nancy
+-- Nancy knows Stuart
+pg2 =
+  Hide
+    ( Mu
+      ( \(~(john : chris : nancy : stuart: _)) ->
+          [
+            Node {
+              label = "Person",
+              properties = [("name", "John")],
+              edges =
+                [ Edge
+                    { label = "Knows",
+                      properties = [],
+                      node = Var nancy
+                    }
+                ]
+            },
+            Node {
+              label = "Person",
+              properties = [("name", "Chris")],
+              edges =
+                [ Edge
+                    { label = "Knows",
+                      properties = [],
+                      node = Var nancy
+                    }
+                ]
+            },
+            Node {
+              label = "Person",
+              properties = [("name", "Nancy")],
+              edges =
+                [ Edge
+                    { label = "Knows",
+                      properties = [],
+                      node = Var stuart
+                    }
+                ]
+            },
+            Node {
+              label = "Person",
+              properties = [("name", "Stuart")],
+              edges = []
+            }
+          ]
+      )
+    )
+
+pg3 =
+  Hide
+    ( In
+        ( Node
+            { label = "Author",
+              properties = [("name", "Nietzsche")],
+              edges =
+                [ Edge
+                    { label = "AuthorOf",
+                      properties = [],
+                      node =
+                        In
+                          ( Node
+                              { label = "Book",
+                                properties = [("title", "Also sprach Zarathustra")],
+                                edges =
+                                  [ Edge
+                                      { label = "AuthorOf",
+                                        properties = [],
+                                        node =
+                                          In
+                                            ( Node
+                                                { label = "Book",
+                                                  properties = [("title", "Also sprach Zarathustra")],
+                                                  edges = []
+                                                }
+                                            )
+                                      }
+                                  ]
+                              }
+                          )
+                    }
+                ]
+            }
+        )
+    )
