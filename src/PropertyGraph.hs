@@ -154,13 +154,23 @@ data Tree = Tree V [Tree]
 
 type Forest = [Tree]
 
+acyclic :: Tree -> Tree
+acyclic = go Set.empty where
+  go :: Set V -> Tree -> Tree
+  go visited (Tree v descendents) =
+    let visited' = Set.insert v visited
+        filterRec =
+          fmap (go visited') .
+            List.filter (\(Tree v' _) -> Set.notMember v' visited')
+    in Tree v (filterRec descendents)
+
 flattenF :: PropertyGraphF Forest -> Forest
 flattenF (Node label props edges) =
   let adjacents = foldMap (\(Edge _ _ nodes) -> nodes) edges
       vertex = V label props
-  in [Tree vertex adjacents]
+      tree = acyclic (Tree vertex adjacents)
+  in [tree]
 
--- Breaks cycles since reachability does not need them.
 flatten :: PropertyGraph -> Forest
 flatten = sfold' flattenF []
 
